@@ -1,6 +1,7 @@
 package getopt
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -692,6 +693,18 @@ func TestString_TypeMismatch(t *testing.T) {
 	assert.Equal(t, a, args)
 }
 
-// Tests:
-//
-// Test alternate names.
+func ExampleGetOptions() {
+	args := []string{
+		"--flag", "--string", "aString", "--", "rest",
+	}
+	boolValue := false
+	stringValue := "Default Value"
+	ret, err := GetOptions(args,
+		"flag!", &boolValue,
+		"string=s", &stringValue,
+	)
+	fmt.Printf("boolValue:%t, stringValue:%s, err:%v, ret:%v\n",
+		boolValue, stringValue, err, ret)
+	// Output:
+	// boolValue:true, stringValue:aString, err:<nil>, ret:[rest]
+}

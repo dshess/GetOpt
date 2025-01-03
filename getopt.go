@@ -1,3 +1,62 @@
+/*
+Package getopt implements command-line flag parsing.  This is abandonware,
+as I replaced it with [github.com/dshess/Opts], which uses descriptor
+functions instead of parsing descriptor strings, because it is cleaner.
+
+# Usage
+
+Options-handling modeled on Perl's Getopt::Long.  To handle an integer
+option and a negatable flag:
+
+	boolValue := false
+	intValue := 0
+	err := GetOSOptions(
+	    "flag!", &boolValue,
+	    "value=i", &intValue,
+	)
+
+If the command is passed "--flag --value 12 other args", then after
+[GetOSOptions], boolValue will be true, intValue will be 12, and
+[os.Args][1:] will be []string{"other", "args"}.
+
+# Command line flag syntax
+
+This code only handles --option style of options.  "--" ends option
+processing.  Boolean options can only be negatable or simple, with no
+parameters (so --option or --nooption).  Int, Float, or String options can
+be provided as --option=value or --option value.  Optional options deliver
+the provided value if the option is seen with no further arguments, or if
+the next argument itself looks like an option.
+
+# Option descriptors
+
+The option list must have pairs of values, a string descriptor and a
+pointer to someplace to store values.  It is an error if the pointed-to
+type is not compatible with the descriptor.  It is also an error if
+multiple pointers to the same variable are provided.
+
+  - "flag", &boolValue - --flag sets boolValue to true
+  - "flag!", &boolValue - --flag sets true, --noflag sets false
+  - "count+", &intValue - each --count increments intValue
+  - "value=i", &intValue - --value 15 or --value=15 sets intValue to 15
+  - "value:i", &intValue - flat with optional value, if no value is
+    provided (no more args, or next looks like a flag), stores 0 to
+    intValue
+  - "value=i@", &intArray - each occurance appends value to the array
+  - "value", &intValue - infers that the value should be parsed as an integer
+  - "value:", &intValue - optional with inferred integer type
+  - "value@", &intArray - array with inferred integer type
+  - "value=f", "value=f@", "value:f" with float-typed pointer for float
+    version, or drop =f to infer the type.
+  - "value=s", "value=s@", "value:s" with string-typed pointer for string
+    version, or drop =s to infer the type.
+
+Descriptors in the style of "value=s" are more in the style of
+Getopt::Long, because Perl's typing is different than Go's.  Perl can infer
+array versus scalar, but not int versus string.  Go can infer int vs
+string, so it may make sense to not use typing in the descriptor.  OTOH,
+the descriptor makes the type clear in context.
+*/
 package getopt
 
 import (
@@ -239,23 +298,9 @@ func processArgs(oc *optionCollection, args []string) ([]string, error) {
 	return rest, nil
 }
 
-// GetOptions is similar to Perl's GetOpt::Long.  |args| is a set of options to
-// process, which will be returned as the first result in case of successful
-// processing (in case of error, |args| will be returned as-is).  Parameters
-// after |args| alternate string option descriptors with pointers to option
-// storage.
-//
-// "flag", &boolValue, - --flag sets boolValue to true.
-// "flag!", &boolValue, - --flag sets boolValue to true, --noflag to false
-// "count+", &intValue, - --count increments intValue
-// "int", &intValue, - --int 15 sets intValue to 15
-// "float", &floatValue, - --float 3.14 sets floatValue to 3.14
-// "string", &stringValue, - --string value sets stringValue to "value"
-// "int@", &intArray - each occurance appends to array (also string and float)
-// "int=i", &intValue - descriptor can specify type, which must match
-//   - also 'b', 'f', and 's'.
-//
-// "int:i", &intValue - value is optional if out of args or next value looks like a flag.
+// Process the argument descriptors and pointers from the passed slice of
+// arguments.  Returns the remaining arguments in case of success, or the
+// original arguments in case of error.
 func GetOptions(args []string, a ...any) ([]string, error) {
 	oc := newOptionCollection()
 
@@ -267,8 +312,8 @@ func GetOptions(args []string, a ...any) ([]string, error) {
 	return processArgs(oc, args)
 }
 
-// GetOSOptions wraps GetOptions to read options from os.Args[1:], destructively
-// replacing it in case of success.
+// GetOSOptions wraps [GetOptions] to read options from [os.Args][1:],
+// destructively updating [os.Args][1:] in case of success.
 func GetOSOptions(a ...any) error {
 	ret, err := GetOptions(os.Args[1:], a...)
 	if err != nil {
@@ -298,7 +343,7 @@ func GetOSOptions(a ...any) error {
 // "name:t" is an optional typed arg, zero if next arg looks flag-like
 // "name=t@" is a typed arg which feeds an array.
 // "name=t{n}" is n values of the type and populates an array.
-// Can be min,max.
+// "name=t{n,m}" is n to m values
 // "name=s%" takes key=value arguments and populates a hash.
 // "name|alt=t" allows alternate names
 //
@@ -306,9 +351,7 @@ func GetOSOptions(a ...any) error {
 // "name:10" integer option default 10
 // "name:+i" counting integer
 
-// Allow --option=value
 // Allow -v
-// Check for --
 
 // Allow an option-processing closure which takes things as input.
 // Allow a flag closure which eats the flag (such as for --help).
