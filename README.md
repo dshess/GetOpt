@@ -4,8 +4,9 @@ instead of parsing descriptor strings, because it is cleaner.
 
 # Usage
 
-Options-handling modeled on Perl's Getopt::Long.  To handle an integer
-option and a negatable flag:
+Options-handling modeled on Perl's
+[Getopt::Long](https://perldoc.perl.org/Getopt::Long).
+To handle an integer option and a negatable flag:
 
 	boolValue := false
 	intValue := 0
@@ -15,8 +16,8 @@ option and a negatable flag:
 	)
 
 If the command is passed "--flag --value 12 other args", then after
-[GetOSOptions], boolValue will be true, intValue will be 12, and
-[os.Args][1:] will be []string{"other", "args"}.
+GetOSOptions, boolValue will be true, intValue will be 12, and
+[os.Args](https://pkg.go.dev/os#Args)[1:] will be []string{"other", "args"}.
 
 # Command line flag syntax
 
