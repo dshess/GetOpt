@@ -3,6 +3,7 @@ package getopt
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"log"
 	"testing"
 )
 
@@ -695,16 +696,22 @@ func TestString_TypeMismatch(t *testing.T) {
 
 func ExampleGetOptions() {
 	args := []string{
-		"--flag", "--string", "aString", "--", "rest",
+		"--files=hello.world", "--length", "10", "--verbose", "rest",
 	}
-	boolValue := false
-	stringValue := "Default Value"
-	ret, err := GetOptions(args,
-		"flag!", &boolValue,
-		"string=s", &stringValue,
+
+	data := "file.dat"
+	length := 24
+	var verbose bool
+	rest, err := GetOptions(args,
+		"length=i", &length, // numeric
+		"files=s", &data, // string
+		"verbose", &verbose, // flag
 	)
-	fmt.Printf("boolValue:%t, stringValue:%s, err:%v, ret:%v\n",
-		boolValue, stringValue, err, ret)
+	if err != nil {
+		log.Fatal("Error in command-line arguments:", err)
+	}
+	fmt.Printf("length:%d, data:%s, verbose:%t, rest:%s\n",
+		length, data, verbose, rest)
 	// Output:
-	// boolValue:true, stringValue:aString, err:<nil>, ret:[rest]
+	// length:10, data:hello.world, verbose:true, rest:[rest]
 }

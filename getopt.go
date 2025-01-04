@@ -5,19 +5,24 @@ functions instead of parsing descriptor strings, because it is cleaner.
 
 # Usage
 
-Options-handling modeled on Perl's Getopt::Long.  To handle an integer
-option and a negatable flag:
+Options-handling modeled on Perl's [Getopt::Long].  To handle a string, an
+int, and a flag:
 
-	boolValue := false
-	intValue := 0
+	data := "file.dat"
+	length := 24
+	var verbose bool
 	err := GetOSOptions(
-	    "flag!", &boolValue,
-	    "value=i", &intValue,
+		"length=i", &length, // numeric
+		"files=s", &data,    // string
+		"verbose", &verbose, // flag
 	)
+	if err != nil {
+		log.Fatal("Error in command-line arguments:", err)
+	}
 
-If the command is passed "--flag --value 12 other args", then after
-[GetOSOptions], boolValue will be true, intValue will be 12, and
-[os.Args][1:] will be []string{"other", "args"}.
+If the command is passed "--files=hello.world --length 10 --verbose rest",
+then after [GetOSOptions], data will be "hello.world", length will be 10,
+verbose will be true, and [os.Args][1:] will be []string{"rest"}.
 
 # Command line flag syntax
 
@@ -56,6 +61,8 @@ Getopt::Long, because Perl's typing is different than Go's.  Perl can infer
 array versus scalar, but not int versus string.  Go can infer int vs
 string, so it may make sense to not use typing in the descriptor.  OTOH,
 the descriptor makes the type clear in context.
+
+[Getopt::Long]: https://perldoc.perl.org/Getopt::Long
 */
 package getopt
 
