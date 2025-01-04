@@ -1,4 +1,4 @@
-module github.com/dshess/GetOpt
+module github.com/dshess/getopt
 
 go 1.23.2
 

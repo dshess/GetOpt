@@ -1,19 +1,19 @@
-getopt implements command-line flag parsing.  This is abandonware, as I
-replaced it with [github.com/dshess/Opts], which uses descriptor functions
-instead of parsing descriptor strings, because it is cleaner.
+/*
+Package getopt implements command-line flag parsing.  This is abandonware,
+as I replaced it with [github.com/dshess/Opts], which uses descriptor
+functions instead of parsing descriptor strings, because it is cleaner.
 
 # Usage
 
-Options-handling modeled on Perl's
-[Getopt::Long](https://perldoc.perl.org/Getopt::Long).
-To handle a string, an int, and a flag:
+Options-handling modeled on Perl's [Getopt::Long].  To handle a string, an
+int, and a flag:
 
 	data := "file.dat"
 	length := 24
 	var verbose bool
-    err := GetOSOptions(
+	err := GetOSOptions(
 		"length=i", &length, // numeric
-		"files=s", &data, // string
+		"files=s", &data,    // string
 		"verbose", &verbose, // flag
 	)
 	if err != nil {
@@ -21,9 +21,8 @@ To handle a string, an int, and a flag:
 	}
 
 If the command is passed "--files=hello.world --length 10 --verbose rest",
-then after GetOSOptions, data will be "hello.world", length will be 10,
-verbose will be true, and [os.Args](https://pkg.go.dev/os#Args)[1:] will be
-[]string{"rest"}.
+then after [GetOSOptions], data will be "hello.world", length will be 10,
+verbose will be true, and [os.Args][1:] will be []string{"rest"}.
 
 # Command line flag syntax
 
@@ -62,3 +61,7 @@ Getopt::Long, because Perl's typing is different than Go's.  Perl can infer
 array versus scalar, but not int versus string.  Go can infer int vs
 string, so it may make sense to not use typing in the descriptor.  OTOH,
 the descriptor makes the type clear in context.
+
+[Getopt::Long]: https://perldoc.perl.org/Getopt::Long
+*/
+package getopt
